@@ -1,0 +1,109 @@
+name: main-web-app
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'web/app/**'
+
+concurrency:
+  group: main-web-app
+  cancel-in-progress: true
+
+env:
+  PHASE: prod
+  APP_NAME: web-app
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  AWS_ECR_WEB_PRIVATE_REPOSITORY: ${{ secrets.AWS_ECR_WEB_PRIVATE_REPOSITORY }}
+  ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
+  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build_and_deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: 1. Start GitHub Action
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,message
+          custom_payload: |
+            {
+              attachments: [{
+                color: '439FE0',
+                text: `[${process.env.AS_WORKFLOW}]\n 배포 시작 - ${process.env.AS_MESSAGE}`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
+        if: always()
+
+      - name: 2. Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 3. Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
+          role-session-name: samplerolesession
+
+
+      - name: 4. Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: 5.1 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 5.2 Build, tag, and push Docker image to Amazon ECR
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./web/app/Dockerfile
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
+          cache-from: type=gha,ref=${{ github.workflow }}-${{ github.ref }}
+          cache-to: type=gha,ref=${{ github.workflow }}-${{ github.ref }},mode=max
+
+      - name: 6. Fill in the new image ID in the Amazon ECS task definition
+        id: task-def
+        uses: aws-actions/amazon-ecs-render-task-definition@v1
+        with:
+          task-definition: ${{ env.ECS_TASK_DEFINITION }}
+          container-name: ${{ env.CONTAINER_NAME }}
+          image: ${{ steps.build-image.outputs.image }}
+
+      - name: Deploy Amazon ECS task definition
+        uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
+        with:
+          task-definition: ${{ steps.task-def.outputs.task-definition }}
+          service: ${{ env.ECS_SERVICE }}
+          cluster: ${{ env.ECS_CLUSTER }}
+          wait-for-service-stability: true
+
+      - name: 9. Finish GitHub Action
+        uses: 8398a7/action-slack@v3
+        with:
+          status: custom
+          fields: workflow,took,message
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
+                text: `[${{process.env.AS_WORKFLOW}}]\n 커밋: ${{process.env.AS_MESSAGE}}\n 상태: ${{ job.status }}\n 소요시간: ${{process.env.AS_TOOK}}`,
+              }]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
