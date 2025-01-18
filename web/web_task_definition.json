@@ -28,7 +28,6 @@
   "taskRoleArn": "arn:aws:iam::183295419955:role/AppWebTaskRole",
   "executionRoleArn": "arn:aws:iam::183295419955:role/AppWebExecutionRole",
   "networkMode": "awsvpc",
-  "status": "ACTIVE",
   "requiresCompatibilities": [
     "FARGATE"
   ],
