@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - 'web/app/**'
+      - 'web/**'
 
 concurrency:
   group: main-web-app
