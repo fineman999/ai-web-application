@@ -59,7 +59,8 @@ jobs:
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
           cache-from: type=gha,ref=${{ github.workflow }}-${{ github.ref }}
           cache-to: type=gha,ref=${{ github.workflow }}-${{ github.ref }},mode=max
-      - name: Debug Image Output
+
+      - name: 5.2 Debug Image Output
         run: echo ${{ steps.build-image.outputs.image }}
 
       - name: 6. Fill in the new image ID in the Amazon ECS task definition
