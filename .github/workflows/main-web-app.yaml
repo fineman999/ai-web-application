@@ -67,9 +67,6 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
 
-      - name: 7.0 ECR Check Cluster Name
-        run: echo ${{ env.ECS_CLUSTER }}
-
       - name: 7. Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
