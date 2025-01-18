@@ -59,10 +59,6 @@ jobs:
           cache-from: type=gha,ref=${{ github.workflow }}-${{ github.ref }}
           cache-to: type=gha,ref=${{ github.workflow }}-${{ github.ref }},mode=max
 
-      - name: 5.3 Debug Image Output
-        run: |
-          echo "Image Tag: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}"
-
       - name: 6. Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@v1
@@ -71,7 +67,10 @@ jobs:
           container-name: ${{ env.CONTAINER_NAME }}
           image: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
 
-      - name: Deploy Amazon ECS task definition
+      - name: 7.0 ECR Check Cluster Name
+        run: echo ${{ env.ECS_CLUSTER }}
+
+      - name: 7. Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
