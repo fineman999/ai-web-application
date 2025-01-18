@@ -55,7 +55,9 @@ jobs:
           context: ./web
           file: ./web/Dockerfile
           push: true
-          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
+            ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:latest
           cache-from: type=gha,ref=${{ github.workflow }}-${{ github.ref }}
           cache-to: type=gha,ref=${{ github.workflow }}-${{ github.ref }},mode=max
 
