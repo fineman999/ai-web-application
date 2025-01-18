@@ -1,0 +1,95 @@
+{
+  "taskDefinitionArn": "arn:aws:ecs:ap-northeast-2:183295419955:task-definition/app-web-td:4",
+  "containerDefinitions": [
+    {
+      "name": "app-web",
+      "image": "183295419955.dkr.ecr.ap-northeast-2.amazonaws.com/app-web",
+      "cpu": 0,
+      "links": [],
+      "portMappings": [
+        {
+          "name": "app-web-8000-tcp",
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [],
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/app-web",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "app-web"
+        },
+        "secretOptions": []
+      },
+      "systemControls": [],
+      "credentialSpecs": []
+    }
+  ],
+  "family": "app-web-td",
+  "taskRoleArn": "arn:aws:iam::183295419955:role/AppWebTaskRole",
+  "executionRoleArn": "arn:aws:iam::183295419955:role/AppWebExecutionRole",
+  "networkMode": "awsvpc",
+  "revision": 4,
+  "volumes": [],
+  "status": "ACTIVE",
+  "requiresAttributes": [
+    {
+      "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+    },
+    {
+      "name": "ecs.capability.execution-role-awslogs"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.ecr-auth"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.task-iam-role"
+    },
+    {
+      "name": "ecs.capability.execution-role-ecr-pull"
+    },
+    {
+      "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+    },
+    {
+      "name": "ecs.capability.task-eni"
+    }
+  ],
+  "placementConstraints": [],
+  "compatibilities": [
+    "EC2",
+    "FARGATE"
+  ],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "2048",
+  "registeredAt": "2025-01-18T07:54:35.377Z",
+  "registeredBy": "arn:aws:iam::183295419955:user/chpark01",
+  "enableFaultInjection": false,
+  "tags": []
+}
