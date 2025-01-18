@@ -41,7 +41,6 @@ jobs:
           role-to-assume: ${{ env.AWS_ROLE_TO_ASSUME }}
           role-session-name: samplerolesession
 
-
       - name: 4. Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -61,7 +60,8 @@ jobs:
           cache-to: type=gha,ref=${{ github.workflow }}-${{ github.ref }},mode=max
 
       - name: 5.3 Debug Image Output
-        run: echo ${{ steps.build-image.outputs.image }}
+        run: |
+          echo "Image Tag: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}"
 
       - name: 6. Fill in the new image ID in the Amazon ECS task definition
         id: task-def
@@ -69,7 +69,7 @@ jobs:
         with:
           task-definition: ${{ env.ECS_TASK_DEFINITION }}
           container-name: ${{ env.CONTAINER_NAME }}
-          image: ${{ steps.build-image.outputs.image }}
+          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
 
       - name: Deploy Amazon ECS task definition
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
