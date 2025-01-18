@@ -15,7 +15,7 @@ router.get("/version", function (req, res) {
   res.json({"version": "0.0.1"});
 });
 
-// Redirect
+// Redirect adf
 const request = require('request');
 BASE_URL = "https://api.chan-factory.store"
 
