@@ -52,7 +52,7 @@ jobs:
       - name: 5.2 Build, tag, and push Docker image to Amazon ECR
         uses: docker/build-push-action@v6
         with:
-          context: .
+          context: ./web
           file: ./web/Dockerfile
           push: true
           tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.AWS_ECR_WEB_PRIVATE_REPOSITORY }}:${{ github.sha }}
