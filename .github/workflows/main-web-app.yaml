@@ -18,10 +18,9 @@ env:
   AWS_ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_TO_ASSUME }}
   AWS_ECR_WEB_PRIVATE_REPOSITORY: ${{ secrets.AWS_ECR_WEB_PRIVATE_REPOSITORY }}
   ECS_CLUSTER: ${{ secrets.ECS_CLUSTER }}
-  ECS_SERVICE: ${{ secrets.ECS_SERVICE }}
+  ECS_WEB_SERVICE: ${{ secrets.ECS_WEB_SERVICE }}
   ECS_TASK_DEFINITION: ${{ secrets.ECS_TASK_DEFINITION }}
-  CONTAINER_NAME: ${{ secrets.CONTAINER_NAME }}
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  CONTAINER_NAME: ${{ secrets.CONTAINER_WEB_NAME }}
 
 
 permissions:
@@ -32,22 +31,6 @@ jobs:
   build_and_deploy:
     runs-on: ubuntu-22.04
     steps:
-      - name: 1. Start GitHub Action
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          fields: workflow,message
-          custom_payload: |
-            {
-              attachments: [{
-                color: '439FE0',
-                text: `[${process.env.AS_WORKFLOW}]\n 배포 시작 - ${process.env.AS_MESSAGE}`,
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ env.SLACK_WEBHOOK_URL }}
-        if: always()
-
       - name: 2. Checkout Code
         uses: actions/checkout@v4
 
@@ -88,22 +71,6 @@ jobs:
         uses: aws-actions/amazon-ecs-deploy-task-definition@df9643053eda01f169e64a0e60233aacca83799a
         with:
           task-definition: ${{ steps.task-def.outputs.task-definition }}
-          service: ${{ env.ECS_SERVICE }}
+          service: ${{ env.ECS_WEB_SERVICE }}
           cluster: ${{ env.ECS_CLUSTER }}
           wait-for-service-stability: true
-
-      - name: 9. Finish GitHub Action
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          fields: workflow,took,message
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `[${{process.env.AS_WORKFLOW}}]\n 커밋: ${{process.env.AS_MESSAGE}}\n 상태: ${{ job.status }}\n 소요시간: ${{process.env.AS_TOOK}}`,
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()
